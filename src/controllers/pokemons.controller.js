@@ -16,7 +16,7 @@ export const getPokemonById = async (req, res) => {
         return res.status(200).json(resultats[0]);
     } catch (err) {
         console.error(`Code: ${err.code}, Message: ${err.sqlMessage}`);
-        return res.status(500).json({ erreur: `Echec lors de la récupération du pokemon avec l'id ${id}` });
+        return res.status(500).json({ erreur: `Echec lors de la récupération du pokemon avec l'id ${id}` + err});
     }
 };
 
@@ -33,7 +33,7 @@ export const getPokemonsListe = async (req, res) => {
             totalPage: data.totalPage
         });
     } catch (err) {
-        return res.status(500).json({ erreur: "Echec lors de la récupération de la liste des pokemons" });
+        return res.status(500).json({ erreur: "Echec lors de la récupération de la liste des pokemons " + err });
     }
 };
 
