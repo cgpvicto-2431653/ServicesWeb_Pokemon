@@ -1,0 +1,15 @@
+# Variables d'environnement (TRÈS IMPORTANT)
+.env
+.env.local
+
+# Dépendances
+node_modules/
+
+# Build et IDE
+dist/
+build/
+.vscode/
+.DS_Store
+
+# Logs
+npm-debug.log*
