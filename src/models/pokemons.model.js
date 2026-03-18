@@ -1,12 +1,13 @@
 import pool from '../config/db.js';
 
 const getPokemonSelonId = async (id) => {
-    const requete = `SELECT * FROM pokemon WHERE id = ?`;
+    // Changement du ? par $1
+    const requete = `SELECT * FROM pokemon WHERE id = $1`;
     try {
-        const [resultats] = await pool.query(requete, [id]);
-        return resultats; 
+        const resultats = await pool.query(requete, [id]);
+        return resultats.rows; // Les données sont dans .rows
     } catch (erreur) {
-        console.error(`Erreur SQL: ${erreur.code} - ${erreur.sqlMessage}`);
+        console.error(`Erreur SQL: ${erreur.code} - ${erreur.message}`);
         throw erreur;
     }
 };
@@ -20,20 +21,23 @@ const getListePokemons = async (page = 1, type = "") => {
     let params = [];
 
     if (type) {
-        requete += " WHERE type_primaire = ?";
-        requeteCount += " WHERE type_primaire = ?";
+        requete += " WHERE type_primaire = $1";
+        requeteCount += " WHERE type_primaire = $1";
         params.push(type);
     }
 
-    requete += " LIMIT ? OFFSET ?";
+    // Gestion dynamique des index pour LIMIT et OFFSET
+    const indexLimite = params.length + 1;
+    const indexOffset = params.length + 2;
+    requete += ` LIMIT $${indexLimite} OFFSET $${indexOffset}`;
     
     try {
-        const [pokemons] = await pool.query(requete, [...params, limite, offset]);
-        const [countRes] = await pool.query(requeteCount, params);
+        const resPokemons = await pool.query(requete, [...params, limite, offset]);
+        const resCount = await pool.query(requeteCount, params);
         
-        const total = countRes[0].total;
+        const total = parseInt(resCount.rows[0].total);
         return {
-            pokemons,
+            pokemons: resPokemons.rows,
             total,
             totalPage: Math.ceil(total / limite) || 1
         };
@@ -43,18 +47,22 @@ const getListePokemons = async (page = 1, type = "") => {
 };
 
 const ajouterPokemon = async (p) => {
-    const requete = `INSERT INTO pokemon (nom, type_primaire, type_secondaire, pv, attaque, defense) VALUES (?, ?, ?, ?, ?, ?)`;
-    const [res] = await pool.query(requete, [p.nom, p.type_primaire, p.type_secondaire, p.pv, p.attaque, p.defense]);
-    return res.insertId;
+    // Postgres ne donne pas de 'insertId' automatiquement, on ajoute RETURNING id
+    const requete = `
+        INSERT INTO pokemon (nom, type_primaire, type_secondaire, pv, attaque, defense) 
+        VALUES ($1, $2, $3, $4, $5, $6) 
+        RETURNING id`;
+    const res = await pool.query(requete, [p.nom, p.type_primaire, p.type_secondaire, p.pv, p.attaque, p.defense]);
+    return res.rows[0].id;
 };
 
 const supprimerPokemon = async (id) => {
-    const requete = `DELETE FROM pokemon WHERE id = ?`;
+    const requete = `DELETE FROM pokemon WHERE id = $1`;
     try {
-        const [resultat] = await pool.query(requete, [id]);
-        return resultat.affectedRows > 0; 
+        const resultat = await pool.query(requete, [id]);
+        return resultat.rowCount > 0; // On utilise rowCount au lieu de affectedRows
     } catch (erreur) {
-        console.error(`Erreur SQL: ${erreur.code} - ${erreur.sqlMessage}`);
+        console.error(`Erreur SQL: ${erreur.code} - ${erreur.message}`);
         throw erreur;
     }
 };
