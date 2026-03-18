@@ -1,0 +1,100 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Pokémon API - Exercice 04",
+    "version": "1.0.0",
+    "description": "API de gestion de Pokémons avec Express et MySQL"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/",
+      "description": "Serveur local"
+    }
+  ],
+  "paths": {
+    "/api/pokemons/liste": {
+      "get": {
+        "summary": "Afficher une liste paginée de tous les pokemons",
+        "tags": ["Pokemons"],
+        "parameters": [
+          { "in": "query", "name": "page", "schema": { "type": "integer", "default": 1 } },
+          { "in": "query", "name": "type", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Liste récupérée avec succès" },
+          "500": { "description": "Erreur SQL" }
+        }
+      }
+    },
+    "/api/pokemons/{id}": {
+      "get": {
+        "summary": "Afficher un pokemon selon son id",
+        "tags": ["Pokemons"],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Pokemon trouvé" },
+          "404": { "description": "Pokemon introuvable" },
+          "500": { "description": "Erreur SQL" }
+        }
+      },
+      "put": {
+        "summary": "Modifier un pokemon",
+        "tags": ["Pokemons"],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Pokemon" } } }
+        },
+        "responses": {
+          "200": { "description": "Modifié avec succès" },
+          "400": { "description": "Données invalides" },
+          "404": { "description": "ID non trouvé" }
+        }
+      },
+      "delete": {
+        "summary": "Supprimer un pokemon",
+        "tags": ["Pokemons"],
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Supprimé avec succès" },
+          "404": { "description": "ID non trouvé" }
+        }
+      }
+    },
+    "/api/pokemons": {
+      "post": {
+        "summary": "Ajouter un pokemon",
+        "tags": ["Pokemons"],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Pokemon" } } }
+        },
+        "responses": {
+          "201": { "description": "Créé avec succès" },
+          "400": { "description": "Champs manquants" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Pokemon": {
+        "type": "object",
+        "properties": {
+          "nom": { "type": "string", "example": "Pikachu" },
+          "type_primaire": { "type": "string", "example": "Electric" },
+          "type_secondaire": { "type": "string", "example": "None" },
+          "pv": { "type": "integer", "example": 35 },
+          "attaque": { "type": "integer", "example": 55 },
+          "defense": { "type": "integer", "example": 40 }
+        }
+      }
+    }
+  }
+}
