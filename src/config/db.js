@@ -1,9 +1,9 @@
 // Version du module mysql qu'on peut utiliser avec async/await
-import mysql from "mysql2/promise";
+import pg from 'pg';
 import dotenv from "dotenv";
 dotenv.config();
- 
-const pool = mysql.createPool({
+
+const pool = new pg.Pool({
     connectionLimit: process.env.MYSQL_CONNECTION_LIMIT,
     host: process.env.MYSQL_HOST,
     user: process.env.MYSQL_USER,
@@ -16,4 +16,3 @@ const pool = mysql.createPool({
 });
  
 export default pool;
- 
